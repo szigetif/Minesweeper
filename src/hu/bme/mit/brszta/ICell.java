@@ -1,13 +1,13 @@
 package hu.bme.mit.brszta;
 
 public interface ICell {
-    enum State {
+    enum CellState {
         DEFAULT,
         MARKED,
         REVEALED
     }
 
-    State getState();
+    CellState getState();
 
     /**
      * Reveals the cell, and returns its content.
@@ -21,5 +21,5 @@ public interface ICell {
      *
      * @return  cell state
      */
-    State mark();
+    CellState mark();
 }
