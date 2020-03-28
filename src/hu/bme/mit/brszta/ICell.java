@@ -12,9 +12,9 @@ public interface ICell {
     /**
      * Reveals the cell, and returns its content.
      *
-     * @return  cell content, can be "", "1" to "8" or "BOMB"
+     * @return  cell content. 0 to 8 represents the number of neighboring mines. -1 means the cell contains a mine.
      */
-    String reveal();
+    int reveal();
 
     /**
      * Cycle through Cell states DEFAULT and MARKED.
