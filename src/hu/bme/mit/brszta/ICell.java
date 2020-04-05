@@ -1,6 +1,7 @@
 package hu.bme.mit.brszta;
 
 public interface ICell {
+
     enum CellState {
         DEFAULT,
         MARKED,
