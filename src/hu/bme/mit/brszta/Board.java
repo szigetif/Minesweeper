@@ -12,9 +12,11 @@ public class Board implements IBoard{
 
     private Hashtable<String, Integer> table_size; //size of table in dictionary, labelled with "x" and "y"
     private int mines; //might be redundant if getNumberOfMines() remains unimplemented
-    private List<Cell> list_of_cells; //all the cell objects in a list
 
-    public Board(int size_x, int size_y, int mines){ //constructor
+    //private List<Cell> list_of_cells; //all the cell objects in a list
+    private List<List<Cell>> list_of_cells;
+
+    public Board(int size_x, int size_y, int mines) { //constructor
         table_size = new Hashtable<>(); //create dictionary for size of table
         table_size.put("x", size_x); //get the size of table from user
         table_size.put("y", size_y); //get the size of table from user
@@ -26,35 +28,42 @@ public class Board implements IBoard{
         init_mines = Stream.concat(init_mines.stream(), init_no_mines.stream()).collect(Collectors.toList()); //concatenate the two previous lists
         Collections.shuffle(init_mines); //shuffle the content of the list to create a random compilation of cells with mines and no mines
 
-        int row = 0, column = 1; //initialize auxiliary variables for the assignment of 2d coordinates to cell objects
-
-        for (int i = 0; i < size_x * size_y; i++) { //create a cell object in an iteration
-            Hashtable<String, Integer> cell_coordinates = new Hashtable<>(); //create dictionary for the coordinates of cell object
-            if(i % size_x == 0) {column=1; row++;} //change row
-            cell_coordinates.put("x", row); //write in the x coordinate
-            cell_coordinates.put("y", column); //write in the y coordinate
-            Cell cell = new Cell(init_mines.get(i), cell_coordinates); //create cell object, assign a mine/no mine to it, give it the corresponding coordinate
-            list_of_cells.add(cell); //add the cell object to the list of cell objects
-            column++; //change column
+        for (int i = 0; i < size_y; i++) {
+            list_of_cells.add(new ArrayList<>());
+            for (int j = 0; j < size_x; j++) {
+                Hashtable<String, Integer> cell_coordinates = new Hashtable<>();
+                cell_coordinates.put("x", j); //write in the x coordinate
+                cell_coordinates.put("y", i); //write in the y coordinate
+                Cell cell = new Cell(init_mines.get(i * size_x + j), cell_coordinates);
+                list_of_cells.get(i).add(cell);
+            }
         }
-        for (Cell cell : list_of_cells) { //calculate number of neighbouring mines
-            if(cell.get_mine()) continue; //if there is a mine, no need for calculation -> number of neighbouring mines = -1 per definiton
-            int number_of_neighbours = 0;
-            int cord_x = cell.get_coordinates().get("x"); //get coordinates of inspected cell
-            int cord_y = cell.get_coordinates().get("y"); //get coordinates of inspected cell
-            for (Cell neighbor : list_of_cells) { //iterate through all other cells with mines and see of they are adjacent to the inspected cell
-                if(!neighbor.get_mine()) continue; //if there is no mine in a cell, then no need to check if it is adjacent or not
-                int sub_cord_x = neighbor.get_coordinates().get("x"); //get coordinates of compared cell
-                int sub_cord_y = neighbor.get_coordinates().get("y"); //get coordinates of compared cell
-                if(Math.abs(cord_x-sub_cord_x) < 2 && Math.abs(cord_y-sub_cord_y) < 2) number_of_neighbours++;
-                //check if they are adjacent, if so then we found a neighbouring mine!
+
+        for (List<Cell> row_cell : list_of_cells) { //calculate number of neighbouring mines
+            for (Cell cell : row_cell) {
+                if (cell.get_mine())
+                    continue; //if there is a mine, no need for calculation -> number of neighbouring mines = -1 per definiton
+                int number_of_neighbours = 0;
+                int cord_x = cell.get_coordinates().get("x"); //get coordinates of inspected cell
+                int cord_y = cell.get_coordinates().get("y"); //get coordinates of inspected cell
+                for (List<Cell> row_neighbor_cell : list_of_cells) {
+                    for (Cell neighbor : row_neighbor_cell) { //iterate through all other cells with mines and see if they are adjacent to the inspected cell
+                        if (!neighbor.get_mine())
+                            continue; //if there is no mine in a cell, then no need to check if it is adjacent or not
+                        int sub_cord_x = neighbor.get_coordinates().get("x"); //get coordinates of compared cell
+                        int sub_cord_y = neighbor.get_coordinates().get("y"); //get coordinates of compared cell
+                        if (Math.abs(cord_x - sub_cord_x) < 2 && Math.abs(cord_y - sub_cord_y) < 2)
+                            number_of_neighbours++;
+                        //check if they are adjacent, if so then we found a neighbouring mine!
+
+                    }
+                }
+                cell.set_number_of_neighbours(number_of_neighbours);
+                //after all other cells were iterated through, we have the number of neighbouring mines and modify the corresponding variable of the cell object
 
             }
-            cell.set_number_of_neighbours(number_of_neighbours);
-            //after all other cells were iterated through, we have the number of neighbouring mines and modify the corresponding variable of the cell object
 
         }
-
     }
 
     public int getSizeX(){
@@ -65,7 +74,7 @@ public class Board implements IBoard{
         return table_size.get("y");
     }
 
-    public List<Cell> getCells(){
+    public List<List<Cell>> getCells(){
         return list_of_cells;
     }
 
@@ -73,8 +82,10 @@ public class Board implements IBoard{
 
     public int getNumberOfFlags(){ //counts the number of flagged cells
         int flags=0;
-        for (Cell cell : list_of_cells) {
-            if (cell.getState() == Cell.CellState.MARKED) flags++;
+        for (List<Cell> list_cell : list_of_cells) {
+            for (Cell cell : list_cell) {
+                if (cell.getState() == Cell.CellState.MARKED) flags++;
+            }
         }
         return flags;
     }
