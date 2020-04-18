@@ -9,7 +9,7 @@ public class Board{
     private int sizeX;
     private int sizeY;
     private int numberOfMines;
-    private List<Boolean> mineList; // This can be sent over network to create identical boards.
+    private List<Boolean> mineList;
     private ArrayList<ArrayList<Cell>> cellMatrix;
 
     public Board(int sizeX, int sizeY, int numberOfMines){
@@ -17,7 +17,7 @@ public class Board{
         this.sizeY = sizeY;
         this.numberOfMines = numberOfMines;
 
-        mineList = createMineList();
+        List<Boolean> mineList = createMineList();
         cellMatrix = createCellMatrix(mineList);
 
         initNeighbourCells();
@@ -38,14 +38,13 @@ public class Board{
         return mineList;
     }
 
-    private ArrayList<ArrayList<Cell>> createCellMatrix(List<Boolean> initMineList)
+    private ArrayList<ArrayList<Cell>> createCellMatrix(List<Boolean> mineList)
     {
-
         cellMatrix = new ArrayList<ArrayList<Cell>>();
         for (int row = 0; row < sizeY; row++) {
             ArrayList<Cell> cellRow = new ArrayList<Cell>();
             for (int col = 0; col < sizeX; col++) {
-                Boolean isMine = initMineList.get(row * sizeY + col);
+                Boolean isMine = mineList.get(row * sizeY + col);
                 cellRow.add(new Cell(isMine));
             }
             cellMatrix.add(cellRow);
