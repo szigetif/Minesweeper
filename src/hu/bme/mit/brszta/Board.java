@@ -9,6 +9,7 @@ public class Board{
     private int sizeX;
     private int sizeY;
     private int numberOfMines;
+    private List<Boolean> mineList; // This can be sent over network to create identical boards.
     private ArrayList<ArrayList<Cell>> cellMatrix;
 
     public Board(int sizeX, int sizeY, int numberOfMines){
@@ -16,28 +17,40 @@ public class Board{
         this.sizeY = sizeY;
         this.numberOfMines = numberOfMines;
 
-        List<Cell> initCellList = new ArrayList<Cell>();
+        mineList = createMineList();
+        cellMatrix = createCellMatrix(mineList);
+
+        initNeighbourCells();
+        initDisplayNumbers();
+    }
+
+    private List<Boolean> createMineList() {
+        List<Boolean> mineList = new ArrayList<Boolean>();
         for (int i = 0; i < sizeX*sizeY; i++) {
             if (i < numberOfMines) {
-                initCellList.add(new Cell(true));
+                mineList.add(true);
             }
             else {
-                initCellList.add(new Cell(false));
+                mineList.add(false);
             }
         }
-        Collections.shuffle(initCellList);
+        Collections.shuffle(mineList);
+        return mineList;
+    }
+
+    private ArrayList<ArrayList<Cell>> createCellMatrix(List<Boolean> initMineList)
+    {
 
         cellMatrix = new ArrayList<ArrayList<Cell>>();
         for (int row = 0; row < sizeY; row++) {
             ArrayList<Cell> cellRow = new ArrayList<Cell>();
             for (int col = 0; col < sizeX; col++) {
-                cellRow.add(initCellList.get(row * sizeY + col));
+                Boolean isMine = initMineList.get(row * sizeY + col);
+                cellRow.add(new Cell(isMine));
             }
             cellMatrix.add(cellRow);
         }
-
-        initNeighbourCells();
-        initDisplayNumbers();
+        return cellMatrix;
     }
 
     private void initNeighbourCells() {
@@ -95,8 +108,8 @@ public class Board{
         return flags;
     }
 
-    public int revealCell(int row, int col) {
+    public Cell getCell(int row, int col) {
         Cell cell = cellMatrix.get(row).get(col);
-        return cell.reveal();
+        return cell;
     }
 }
