@@ -93,18 +93,28 @@ public class Board{
         return sizeY;
     }
 
-    public int getNumberOfMines() {
+    public int countMines() {
         return numberOfMines;
     }
 
-    public int getNumberOfFlags() {
-        int flags=0;
+    public int countFlags() {
+        int count = 0;
         for (List<Cell> cellRow : cellMatrix) {
             for (Cell cell : cellRow) {
-                if (cell.getState() == CellState.MARKED) flags++;
+                if (cell.getState() == CellState.FLAGGED) count++;
             }
         }
-        return flags;
+        return count;
+    }
+
+    public int countRevealed() {
+        int count = 0;
+        for (List<Cell> cellRow : cellMatrix) {
+            for (Cell cell : cellRow) {
+                if (cell.getState() == CellState.REVEALED) count++;
+            }
+        }
+        return count;
     }
 
     public Cell getCell(int row, int col) {

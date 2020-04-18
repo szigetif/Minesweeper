@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 enum CellState {
     DEFAULT,
-    MARKED,
+    FLAGGED,
     REVEALED
 }
 
@@ -60,9 +60,9 @@ public class Cell {
         }
     }
 
-    public CellState mark() {
-        if(cellState == CellState.MARKED) cellState = CellState.DEFAULT;
-        if(cellState == CellState.DEFAULT) cellState = CellState.MARKED;
+    public CellState flag() {
+        if(cellState == CellState.FLAGGED) cellState = CellState.DEFAULT;
+        if(cellState == CellState.DEFAULT) cellState = CellState.FLAGGED;
 
         return cellState;
     }
