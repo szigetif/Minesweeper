@@ -48,11 +48,12 @@ public class Cell {
             return -1; //mine is indicated by -1
         } 
         else {
+            if (displayNumber == 0) revealNeighbours();
             return displayNumber;
         }
     }
 
-    public void revealNeighbours() {
+    private void revealNeighbours() {
         // Modifies their state. Return value is not important because none of them are mines.
         for (Cell cell : neighbourCells) {
             cell.reveal();

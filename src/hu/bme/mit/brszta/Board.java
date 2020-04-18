@@ -99,9 +99,4 @@ public class Board{
         Cell cell = cellMatrix.get(row).get(col);
         return cell.reveal();
     }
-
-    public void revealNeighbours(int row, int col) {
-        Cell cell = cellMatrix.get(row).get(col);
-        cell.revealNeighbours();
-    }
 }
