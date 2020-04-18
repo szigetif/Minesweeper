@@ -10,14 +10,14 @@ enum CellState {
 
 public class Cell {
 
-    private CellState cellState; //DEFAULT or MARKED or REVEALED
-    private Boolean isMine; //updated by Board class
-    private int displayNumber; //number of adjacent mines, calculated by the Board constructor and modified through get()
+    private CellState cellState;
+    private Boolean isMine;
+    private int displayNumber;
     private List<Cell> neighbourCells;
 
-    public Cell(Boolean isMine) { //constructor
+    public Cell(Boolean isMine) {
         this.cellState = CellState.DEFAULT;
-        this.isMine = isMine; //from Board constructor
+        this.isMine = isMine;
         this.neighbourCells = new ArrayList<Cell>(); // 2D matrix
     }
 
@@ -43,6 +43,7 @@ public class Cell {
     }
 
     public int reveal(){
+        cellState = CellState.REVEALED;
         if (isMine) {
             return -1; //mine is indicated by -1
         } 
@@ -51,12 +52,17 @@ public class Cell {
         }
     }
 
-    public CellState mark(){ //switch between MARKED and DEFAULT
+    public void revealNeighbours() {
+        // Modifies their state. Return value is not important because none of them are mines.
+        for (Cell cell : neighbourCells) {
+            cell.reveal();
+        }
+    }
 
+    public CellState mark() {
         if(cellState == CellState.MARKED) cellState = CellState.DEFAULT;
         if(cellState == CellState.DEFAULT) cellState = CellState.MARKED;
 
         return cellState;
     }
-
 }
