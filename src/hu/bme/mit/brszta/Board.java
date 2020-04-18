@@ -1,19 +1,15 @@
 package hu.bme.mit.brszta;
 
-//import java.util.ArrayList;
-//import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-//import java.util.Collections;
-import java.util.*;
-import java.lang.Math;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class Board{
 
     private int sizeX;
     private int sizeY;
     private int numberOfMines;
-    private List<List<Cell>> cellMatrix;
+    private ArrayList<ArrayList<Cell>> cellMatrix;
 
     public Board(int sizeX, int sizeY, int numberOfMines){
         this.sizeX = sizeX;
@@ -21,17 +17,17 @@ public class Board{
         this.numberOfMines = numberOfMines;
 
         List<Cell> initCellList = new ArrayList<Cell>();
-        for (int i = 0; i < sizeX + sizeY; i++) {
+        for (int i = 0; i < sizeX*sizeY; i++) {
             if (i < numberOfMines) {
-                initCellList.add(new Cell(isMine=true));
+                initCellList.add(new Cell(true));
             }
             else {
-                initCellList.add(new Cell(isMine=false));
+                initCellList.add(new Cell(false));
             }
         }
         Collections.shuffle(initCellList);
 
-        cellMatrix = new ArrayList<ArrayList>();
+        cellMatrix = new ArrayList<ArrayList<Cell>>();
         for (int row = 0; row < sizeY; row++) {
             ArrayList<Cell> cellRow = new ArrayList<Cell>();
             for (int col = 0; col < sizeX; col++) {
@@ -78,11 +74,11 @@ public class Board{
     }
 
     public int getSizeX(){
-        return table_size.get("x");
+        return sizeX;
     }
 
     public int getSizeY(){
-        return table_size.get("y");
+        return sizeY;
     }
 
     public int getNumberOfMines() {
@@ -93,7 +89,7 @@ public class Board{
         int flags=0;
         for (List<Cell> cellRow : cellMatrix) {
             for (Cell cell : cellRow) {
-                if (cell.getState() == Cell.CellState.MARKED) flags++;
+                if (cell.getState() == CellState.MARKED) flags++;
             }
         }
         return flags;

@@ -1,5 +1,6 @@
 package hu.bme.mit.brszta;
-import java.util.Hashtable;
+import java.util.List;
+import java.util.ArrayList;
 
 enum CellState {
     DEFAULT,
@@ -11,7 +12,7 @@ public class Cell {
 
     private CellState cellState; //DEFAULT or MARKED or REVEALED
     private Boolean isMine; //updated by Board class
-    private int displayNumber; //number of neigbouring mines, calculated by the Board constructor and modified through get()
+    private int displayNumber; //number of adjacent mines, calculated by the Board constructor and modified through get()
     private List<Cell> neighbourCells;
 
     public Cell(Boolean isMine) { //constructor
