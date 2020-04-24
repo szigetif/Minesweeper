@@ -13,7 +13,6 @@ public class Board{
         cellMatrix = createCellMatrix(sizeX, sizeY, mineList);
 
         initNeighbourCells();
-        initDisplayNumbers();
     }
 
     private List<Boolean> createMineList(int len, int numberOfMines) {
@@ -36,8 +35,14 @@ public class Board{
         for (int row = 0; row < sizeY; row++) {
             ArrayList<Cell> cellRow = new ArrayList<Cell>();
             for (int col = 0; col < sizeX; col++) {
-                Boolean isMine = mineList.get(row * sizeY + col);
-                cellRow.add(new Cell(isMine));
+                Cell cell;
+                if (mineList.get(row * sizeY + col)) {
+                    cell = new MineCell();
+                }
+                else {
+                    cell = new EmptyCell();
+                }
+                cellRow.add(cell);
             }
             cellMatrix.add(cellRow);
         }
@@ -71,14 +76,6 @@ public class Board{
         }
     }
 
-    private void initDisplayNumbers() {
-        for (List<Cell> cellRow : cellMatrix) {
-            for (Cell cell : cellRow) {
-                cell.initDisplayNumber();
-            }
-        }
-    }
-
     public int getSizeX(){
         return cellMatrix.get(0).size();
     }
@@ -91,7 +88,7 @@ public class Board{
         int count = 0;
         for (List<Cell> cellRow : cellMatrix) {
             for (Cell cell : cellRow) {
-                if (cell.isMine()) count++;
+                if (cell instanceof MineCell) count++;
             }
         }
         return count;
@@ -101,7 +98,7 @@ public class Board{
         int count = 0;
         for (List<Cell> cellRow : cellMatrix) {
             for (Cell cell : cellRow) {
-                if (cell.getState() == CellState.FLAGGED) count++;
+                if (cell.cellState == CellState.FLAGGED) count++;
             }
         }
         return count;
@@ -111,7 +108,7 @@ public class Board{
         int count = 0;
         for (List<Cell> cellRow : cellMatrix) {
             for (Cell cell : cellRow) {
-                if (cell.getState() == CellState.REVEALED) count++;
+                if (cell.cellState == CellState.REVEALED) count++;
             }
         }
         return count;
