@@ -8,12 +8,12 @@ public class BoardBuilder {
 
     public Board getRandomBoard(int sizeX, int sizeY, int numberOfMines) {
         boolean[][] mineMatrix = createRandomBooleanMatrix(sizeX, sizeY, numberOfMines);
-        ArrayList<ArrayList<Cell>> cellMatrix = createCellMatrix(mineMatrix);
+        Cell[][] cellMatrix = createCellMatrix(mineMatrix);
         return new Board(cellMatrix);
     }
 
     public Board getBoardFromBooleanMatrix(boolean[][] booleanMatrix) {
-        ArrayList<ArrayList<Cell>> cellMatrix = createCellMatrix(booleanMatrix);
+        Cell[][] cellMatrix = createCellMatrix(booleanMatrix);
         return new Board(cellMatrix);
     }
 
@@ -38,22 +38,23 @@ public class BoardBuilder {
         return matrix;
     }
 
-    private ArrayList<ArrayList<Cell>> createCellMatrix(boolean[][] mineMatrix)
+    private Cell[][] createCellMatrix(boolean[][] mineMatrix)
     {
-        ArrayList<ArrayList<Cell>> cellMatrix = new ArrayList<ArrayList<Cell>>();
-        for (boolean[] row : mineMatrix) {
-            ArrayList<Cell> cellRow = new ArrayList<Cell>();
-            for (boolean isMine : row) {
+        int sizeX = mineMatrix[0].length;
+        int sizeY = mineMatrix.length;
+
+        Cell[][] cellMatrix = new Cell[sizeY][sizeX];
+        for (int row = 0; row < sizeY; row++) {
+            for (int col = 0; col < sizeX; col++) {
                 Cell cell;
-                if (isMine) {
+                if (mineMatrix[row][col]) {
                     cell = new MineCell();
                 }
                 else {
                     cell = new EmptyCell();
                 }
-                cellRow.add(cell);
+                cellMatrix[row][col] = cell;
             }
-            cellMatrix.add(cellRow);
         }
         return cellMatrix;
     }

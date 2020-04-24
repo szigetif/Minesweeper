@@ -6,9 +6,9 @@ import java.util.List;
 
 public class Board{
     private List<Boolean> mineList;
-    private ArrayList<ArrayList<Cell>> cellMatrix;
+    private Cell[][] cellMatrix;
 
-    public Board(ArrayList<ArrayList<Cell>> cellMatrix){
+    public Board(Cell[][] cellMatrix){
         this.cellMatrix = cellMatrix;
         initNeighbourCells();
     }
@@ -19,38 +19,38 @@ public class Board{
         int sizeY = getSizeY();
         for (int row = 0; row < sizeY; row++) {
             for (int col = 0; col < sizeX; col++) {
-                Cell cell = cellMatrix.get(row).get(col);
+                Cell cell = cellMatrix[row][col];
                 if (row != 0 && col != 0)
-                    cell.addNeighbourCell(cellMatrix.get(row-1).get(col-1));
+                    cell.addNeighbourCell(cellMatrix[row-1][col-1]);
                 if (row != 0)
-                    cell.addNeighbourCell(cellMatrix.get(row-1).get(col));
+                    cell.addNeighbourCell(cellMatrix[row-1][col]);
                 if (row != 0 && col != sizeX-1)
-                    cell.addNeighbourCell(cellMatrix.get(row-1).get(col+1));
+                    cell.addNeighbourCell(cellMatrix[row-1][col+1]);
                 if (col != 0)
-                    cell.addNeighbourCell(cellMatrix.get(row).get(col-1));
+                    cell.addNeighbourCell(cellMatrix[row][col-1]);
                 if (col != sizeX-1)
-                    cell.addNeighbourCell(cellMatrix.get(row).get(col+1));
+                    cell.addNeighbourCell(cellMatrix[row][col+1]);
                 if (row != sizeY-1 && col != 0)
-                    cell.addNeighbourCell(cellMatrix.get(row+1).get(col-1));
+                    cell.addNeighbourCell(cellMatrix[row+1][col-1]);
                 if (row != sizeY-1)
-                    cell.addNeighbourCell(cellMatrix.get(row+1).get(col));
+                    cell.addNeighbourCell(cellMatrix[row+1][col]);
                 if (row != sizeY-1 && col != sizeX-1)
-                    cell.addNeighbourCell(cellMatrix.get(row+1).get(col+1));
+                    cell.addNeighbourCell(cellMatrix[row+1][col+1]);
             }
         }
     }
 
     public int getSizeX(){
-        return cellMatrix.get(0).size();
+        return cellMatrix[0].length;
     }
 
     public int getSizeY(){
-        return cellMatrix.size();
+        return cellMatrix.length;
     }
 
     public int countMines() {
         int count = 0;
-        for (List<Cell> cellRow : cellMatrix) {
+        for (Cell[] cellRow : cellMatrix) {
             for (Cell cell : cellRow) {
                 if (cell instanceof MineCell) count++;
             }
@@ -60,7 +60,7 @@ public class Board{
 
     public int countFlags() {
         int count = 0;
-        for (List<Cell> cellRow : cellMatrix) {
+        for (Cell[] cellRow : cellMatrix) {
             for (Cell cell : cellRow) {
                 if (cell.cellState == CellState.FLAGGED) count++;
             }
@@ -70,7 +70,7 @@ public class Board{
 
     public int countRevealed() {
         int count = 0;
-        for (List<Cell> cellRow : cellMatrix) {
+        for (Cell[] cellRow : cellMatrix) {
             for (Cell cell : cellRow) {
                 if (cell.cellState == CellState.REVEALED) count++;
             }
@@ -79,6 +79,6 @@ public class Board{
     }
 
     public Cell getCell(int row, int col) {
-        return cellMatrix.get(row).get(col);
+        return cellMatrix[row][col];
     }
 }
