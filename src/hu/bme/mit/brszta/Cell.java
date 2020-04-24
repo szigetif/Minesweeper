@@ -35,8 +35,12 @@ public abstract class Cell {
     }
 
     public CellState flag() {
-        if(cellState == CellState.FLAGGED) cellState = CellState.DEFAULT;
-        if(cellState == CellState.DEFAULT) cellState = CellState.FLAGGED;
+        if (cellState == CellState.DEFAULT) {
+            cellState = CellState.FLAGGED;
+        }
+        else if (cellState == CellState.FLAGGED) {
+            cellState = CellState.DEFAULT;
+        }
 
         return cellState;
     }
