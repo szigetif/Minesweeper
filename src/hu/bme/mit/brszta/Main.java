@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public class Main implements Runnable {
 
-    GUI gui = new GUI(30,10,2);
+    GUI gui = new GUI(30,10,300);
 
     public Main() throws IOException {
     }
