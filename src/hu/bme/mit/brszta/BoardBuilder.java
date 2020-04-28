@@ -4,14 +4,30 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Builds boards with the desired parameters.
+ */
 public class BoardBuilder {
 
+    /**
+     * Create a board with random mine placement.
+     * @param sizeX Horizontal size of the board.
+     * @param sizeY Vertical size of the board.
+     * @param numberOfMines Number of mines to place on the board.
+     * @return Generated board.
+     */
     public Board getRandomBoard(int sizeX, int sizeY, int numberOfMines) {
         boolean[][] mineMatrix = createRandomBooleanMatrix(sizeX, sizeY, numberOfMines);
         Cell[][] cellMatrix = createCellMatrix(mineMatrix);
         return new Board(cellMatrix);
     }
 
+    /**
+     * Create a board from a 2D array of boolean values.
+     * @param booleanMatrix 2D array of boolean values. Contains {@code true} where mines should be placed,
+     *      {@code false} everywhere else. Must be a valid rectangular matrix.
+     * @return Generated board.
+     */
     public Board getBoardFromBooleanMatrix(boolean[][] booleanMatrix) {
         Cell[][] cellMatrix = createCellMatrix(booleanMatrix);
         return new Board(cellMatrix);

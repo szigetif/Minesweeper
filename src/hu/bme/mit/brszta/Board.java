@@ -1,13 +1,15 @@
 package hu.bme.mit.brszta;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-public class Board{
-    private List<Boolean> mineList;
+/**
+ * Playing board of the Minesweeper. Contains a matrix of cells. To create a board, use a {@link BoardBuilder}.
+ */
+public class Board {
     private Cell[][] cellMatrix;
 
+    /**
+     * Construct a board from a 2D array of cells.
+     * @param cellMatrix 2D array of cells. Must be a valid matrix, ie. must contain a rectangular arrangement of cells.
+     */
     public Board(Cell[][] cellMatrix){
         this.cellMatrix = cellMatrix;
         initNeighbourCells();
@@ -40,14 +42,26 @@ public class Board{
         }
     }
 
+    /**
+     * Get horizontal size of the board, ie. how many cells are in a row.
+     * @return Horizontal size of the board.
+     */
     public int getSizeX(){
         return cellMatrix[0].length;
     }
 
+    /**
+     * Get vertical size of the board, ie. how many cells are in a column.
+     * @return Vertical size of the board.
+     */
     public int getSizeY(){
         return cellMatrix.length;
     }
 
+    /**
+     * Count every mine on the board.
+     * @return Count of mines.
+     */
     public int countMines() {
         int count = 0;
         for (Cell[] cellRow : cellMatrix) {
@@ -58,6 +72,10 @@ public class Board{
         return count;
     }
 
+    /**
+     * Count every flag on the board.
+     * @return Count of flags.
+     */
     public int countFlags() {
         int count = 0;
         for (Cell[] cellRow : cellMatrix) {
@@ -68,6 +86,10 @@ public class Board{
         return count;
     }
 
+    /**
+     * Count revealed cells on the board.
+     * @return Count of revealed cells.
+     */
     public int countRevealed() {
         int count = 0;
         for (Cell[] cellRow : cellMatrix) {
@@ -78,6 +100,12 @@ public class Board{
         return count;
     }
 
+    /**
+     * Get cell on the given position.
+     * @param row Row of the selected cell. Indexing starts from 0.
+     * @param col Column of the selected cell. Indexing starts from 0.
+     * @return The selected cell.
+     */
     public Cell getCell(int row, int col) {
         return cellMatrix[row][col];
     }
