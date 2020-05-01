@@ -42,7 +42,6 @@ public abstract class Cell {
     public void addNeighbourCell(Cell neighbourCell) {
         neighbourCells.add(neighbourCell);
     }
-
     /**
      * Reveal the cell.
      *

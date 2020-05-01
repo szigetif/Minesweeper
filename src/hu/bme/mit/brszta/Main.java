@@ -1,13 +1,27 @@
 package hu.bme.mit.brszta;
 
-import java.util.List;
+import java.io.IOException;
 
-public class Main {
+public class Main implements Runnable {
 
-    public static void main(String[] args) {
-        BoardBuilder builder = new BoardBuilder();
-        Board board = builder.getRandomBoard(3, 3, 1);
-        board.getCell(0, 0).reveal();
-        System.out.println("OK");
+    GUI gui = new GUI(30,10,300);
+    //BoardBuilder builder = new BoardBuilder();
+    //Board board = builder.getRandomBoard(3, 3, 1);
+    //board.getCell(0, 0).reveal();
+
+    public Main() throws IOException {
+    }
+
+    public static void main(String[] args) throws IOException {
+        Runnable runnable = new Main();
+        Thread thread = new Thread(runnable);
+        thread.start();
+    }
+    @Override
+    @SuppressWarnings("InfiniteLoopStatement") //that is to calm intellij
+    public void run() {
+        while(true){
+            gui.repaint();
+        }
     }
 }

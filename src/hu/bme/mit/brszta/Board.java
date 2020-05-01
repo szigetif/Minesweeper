@@ -17,6 +17,7 @@ public class Board {
 
     private void initNeighbourCells() {
         // Connect the adjacent cells to each cell in the cellMatrix.
+
         int sizeX = getSizeX();
         int sizeY = getSizeY();
         for (int row = 0; row < sizeY; row++) {
