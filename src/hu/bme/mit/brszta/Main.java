@@ -1,6 +1,8 @@
 package hu.bme.mit.brszta;
 
 import java.io.IOException;
+import javax.swing.UIManager;
+
 
 public class Main implements Runnable {
 
@@ -11,6 +13,13 @@ public class Main implements Runnable {
     }
 
     public static void main(String[] args) throws IOException {
+
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
         Runnable runnable = new Main();
         Thread thread = new Thread(runnable);
         thread.start();

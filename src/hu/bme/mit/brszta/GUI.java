@@ -14,6 +14,7 @@ public class GUI extends JFrame { //it is the window
     private Panel panel;
     private Main_menu main_menu;
     private JButton button;
+    private ButtonGroup difficulties;
 
 
     private Board board;
@@ -47,35 +48,94 @@ public class GUI extends JFrame { //it is the window
 
         button.addActionListener(new ActionListener(){ //add actionlistener to button with anonymous class
             public void actionPerformed(ActionEvent e){
-                cell_lookup_table.forEach((key, value) -> System.out.println(key + " " + value));
+                builder = new BoardBuilder();
+                if(difficulties.getSelection().getActionCommand().equals("easy")) {
+                    board = builder.getRandomBoard(9, 9, 10);
+                }
+                else if(difficulties.getSelection().getActionCommand().equals("medium")) {
+                    board = builder.getRandomBoard(16, 16, 40);
+                }
+                else { //if "hard"
+                    board = builder.getRandomBoard(36, 36, 99);
+                }
+                try {
+                    panel = new Panel(); //the thing in the window
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                start_clock =new Date();
+                this.add(panel, BorderLayout.CENTER); //connects panel to window, centers panel in window
+                this.pack(); //sizing the frame with layout manager according to the needs of its subcomponents
+                this.setTitle("Minesweeper");
+                this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                this.setVisible(true);
+                this.setResizable(true);
+                this.setLocationRelativeTo(null); //centers window
+
             }
         });
 
+
+
     }
+
 
     public class Main_menu extends JPanel{
 
-        private CheckboxGroup difficulties;
+
+        private ButtonGroup modes;
+        private ButtonGroup connection;
         private JLabel label_difficulties;
+        private JLabel label_modes;
+        private JLabel label_connection;
+        private JLabel label_role;
 
         public Main_menu() {
-            button = new JButton("new game");
 
-            difficulties = new CheckboxGroup();
-            Checkbox difficulties_easy = new Checkbox("Easy", difficulties, false);
-            //difficulties_easy.setBounds(0,0, 50,50);
-            Checkbox difficulties_medium = new Checkbox("Medium", difficulties, false);
-            //difficulties_medium.setBounds(50,70, 50,50);
-            Checkbox difficulties_hard = new Checkbox("Hard", difficulties, false);
-            //difficulties_hard.setBounds(50,120, 50,50);
+
+            difficulties = new ButtonGroup();
+            JRadioButton difficulties_easy = new JRadioButton("Easy", false);
+            difficulties_easy.setActionCommand("easy");
+            JRadioButton difficulties_medium = new JRadioButton("Medium", false);
+            difficulties_easy.setActionCommand("medium");
+            JRadioButton difficulties_hard = new JRadioButton("Hard", false);
+            difficulties_easy.setActionCommand("hard");
+            difficulties.add(difficulties_easy);
+            difficulties.add(difficulties_medium);
+            difficulties.add(difficulties_hard);
 
             label_difficulties = new JLabel("Difficulty: ");
 
+            modes = new ButtonGroup();
+            JRadioButton single = new JRadioButton("Single player", false);
+            JRadioButton multi = new JRadioButton("Multiplayer", false);
+            modes.add(single);
+            modes.add(multi);
+
+            label_modes = new JLabel("Game modes: ");
+
+            connection = new ButtonGroup();
+            JRadioButton host = new JRadioButton("Host", false);
+            JRadioButton guest = new JRadioButton("Guest", false);
+            connection.add(host);
+            connection.add(guest);
+            host.setEnabled(false);
+            guest.setEnabled(false);
+
+            label_role = new JLabel("Role: ");
+
+
+            label_connection = new JLabel("Host IP: ");
+            JTextField IP_address = new JTextField("192.168.0.123");
+            IP_address.setEditable(false);
+
+            button = new JButton("new game");
 
             this.setBorder(BorderFactory.createEmptyBorder(30,30,30,30));
             this.setLayout(new GridBagLayout());
             GridBagConstraints constrains = new GridBagConstraints();
             constrains.fill = GridBagConstraints.HORIZONTAL;
+
             constrains.gridx = 0;
             constrains.gridy = 0;
             this.add(label_difficulties, constrains);
@@ -87,9 +147,45 @@ public class GUI extends JFrame { //it is the window
             this.add(difficulties_medium, constrains);
             constrains.gridx = 1;
             constrains.gridy = 2;
+            constrains.insets = new Insets(0,0,10,0);
             this.add(difficulties_hard, constrains);
 
-            //this.add(button);
+            constrains.gridx = 0;
+            constrains.gridy = 4;
+            this.add(label_modes, constrains);
+            constrains.gridx = 1;
+            constrains.gridy = 4;
+            constrains.insets = new Insets(0,0,0,0);
+            this.add(single, constrains);
+            constrains.gridx = 1;
+            constrains.gridy = 5;
+            constrains.insets = new Insets(0,0,10,0);
+            this.add(multi, constrains);
+
+            constrains.gridx = 0;
+            constrains.gridy = 6;
+            this.add(label_role, constrains);
+            constrains.gridx = 1;
+            constrains.gridy = 6;
+            constrains.insets = new Insets(0,0,0,0);
+            this.add(host, constrains);
+            constrains.gridx = 1;
+            constrains.gridy = 7;
+            constrains.insets = new Insets(0,0,10,0);
+            this.add(guest, constrains);
+
+            constrains.gridx = 0;
+            constrains.gridy = 8;
+            this.add(label_connection, constrains);
+            constrains.gridx = 1;
+            constrains.gridy = 8;
+            constrains.insets = new Insets(0,0,10,0);
+            this.add(IP_address, constrains);
+
+            constrains.gridx = 1;
+            constrains.gridy = 9;
+            this.add(button, constrains);
+
 
 
         }
