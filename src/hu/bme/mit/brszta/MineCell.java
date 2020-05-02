@@ -19,5 +19,9 @@ public class MineCell extends Cell {
             return 0;
         }
     }
+    @Override
+    public boolean isMine() {
+        return true;
+    }
 }
 

@@ -110,4 +110,14 @@ public class Board {
     public Cell getCell(int row, int col) {
         return cellMatrix[row][col];
     }
+
+    public int countRevealedMines() {
+        int count = 0;
+        for (Cell[] cellRow : cellMatrix) {
+            for (Cell cell : cellRow) {
+                if ((cell.cellState == CellState.FLAGGED) && cell.isMine()) count++;
+            }
+        }
+        return count;
+    }
 }

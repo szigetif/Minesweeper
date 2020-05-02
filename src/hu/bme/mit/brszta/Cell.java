@@ -53,6 +53,8 @@ public abstract class Cell {
      * Reveal all the neighbour cells. Happens when the cell is revealed and it has no mines among its neighbours, ie.
      * its display value is blank.
      */
+    public abstract boolean isMine();
+
     protected void revealNeighbours() {
         // Return value is not important because none of them are mines.
         for (Cell cell : neighbourCells) {
