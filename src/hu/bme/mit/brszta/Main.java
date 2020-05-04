@@ -8,13 +8,12 @@ public class Main implements Runnable {
 
     GUI gui = new GUI();
 
-
-    public Main() throws IOException {
+    public Main() {
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
-        try {
+        try { //create the UI theme according to the OS
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             e.printStackTrace();
@@ -25,10 +24,11 @@ public class Main implements Runnable {
         thread.start();
     }
     @Override
-    @SuppressWarnings("InfiniteLoopStatement") //that is to calm down intellij
     public void run() {
         while(!gui.win_flag && !gui.lose_flag){
-            gui.window_frame.repaint();
+            //in case of losing or winning stop repainting
+            // the timer freezes in this way
+            gui.window_frame.repaint(); //repaint every half second for the timer
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {

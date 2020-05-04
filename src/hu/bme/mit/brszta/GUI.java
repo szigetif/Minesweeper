@@ -1,39 +1,37 @@
 package hu.bme.mit.brszta;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.awt.*;
+import javax.swing.*;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.util.*;
 
-public class GUI {
+public class GUI { //contains all the classes necessary to build the GUI
 
     public Window_Frame window_frame;
     private Panel panel;
-    private Main_menu main_menu;
-    private JButton button;
     private ButtonGroup difficulties;
 
     private Board board;
-    private BoardBuilder builder;
     private Map<Key, Cell> cell_lookup_table;
     private Date start_clock;
     public boolean win_flag, lose_flag;
 
-    public GUI() throws IOException { //IOException because the ImageIO.read wanted it...
-        window_frame = new Window_Frame();
-        lose_flag = false;
+    public GUI() {
+        window_frame = new Window_Frame(); //creating the Jframe containing all GUI elements
+        lose_flag = false; //initializing win/lose flags
         win_flag = false;
     }
 
-    public class Button implements ActionListener{
+    public class Button implements ActionListener{ //New Game button
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            builder = new BoardBuilder();
+            BoardBuilder builder = new BoardBuilder();
+            //choosing between difficulty levels with a Radiobutton Group
             if(difficulties.getSelection().getActionCommand().equals("easy")) {
                 board = builder.getRandomBoard(9, 9, 10);
             }
@@ -43,12 +41,13 @@ public class GUI {
             else { //if "hard"
                 board = builder.getRandomBoard(36, 36, 99);
             }
+            //overwriting the menu panel with the playing panel
             try {
-                panel = new Panel(); //the thing in the window
+                panel = new Panel(); //playing panel
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-            start_clock = new Date();
+            start_clock = new Date(); //starting the game clock
             window_frame.setContentPane(panel);
             window_frame.pack(); //sizing the frame with layout manager according to the needs of its subcomponents
         }
@@ -56,47 +55,32 @@ public class GUI {
 
     public class Window_Frame extends JFrame { //it is the window
 
-        private Panel panel;
-        private Main_menu main_menu;
-        private JButton button;
-        private ButtonGroup difficulties;
+        public Window_Frame() {
 
-
-        private Board board;
-        private BoardBuilder builder;
-        private Map<Key, Cell> cell_lookup_table;
-        private Date start_clock;
-
-        public Window_Frame() throws IOException { //IOException because the ImageIO.read wanted it...
-
-            main_menu = new Main_menu();
+            Main_menu main_menu = new Main_menu(); //create the menu panel
             this.add(main_menu, BorderLayout.CENTER); //connects panel to window, centers panel in window
             this.pack(); //sizing the frame with layout manager according to the needs of its subcomponents
             this.setTitle("Minesweeper");
-            this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); //close program when GUI window closed
             this.setVisible(true);
             this.setResizable(true);
             this.setLocationRelativeTo(null); //centers window
-
         }
-
 
     }
 
     public class Panel extends JPanel{
 
-        private BufferedImage all_img;
         private Map<String, BufferedImage> dictionary_of_images;
-        //private BufferedImage resized;
-        private Click click;
 
         public Panel() throws IOException {
 
-            all_img = ImageIO.read(new File("./all.gif"));
-            dictionary_of_images = new HashMap<>();
-            cell_lookup_table = new HashMap<>();
-            click = new Click();
+            BufferedImage all_img = ImageIO.read(new File("./all.gif")); //importing the "sprite"
+            dictionary_of_images = new HashMap<>(); //creating the list of images with names
+            cell_lookup_table = new HashMap<>(); //creating the list of cells with coordinates
+            Click click = new Click(); //using our Click class to handle left/right clicks
 
+            //cropping from the "sprite" all images and placing them in a dictionary
             dictionary_of_images.put("top_left_corner", all_img.getSubimage(0,81,10,10));
             dictionary_of_images.put("horizontal_border", all_img.getSubimage(40,81,16,10));
             dictionary_of_images.put("top_right_corner", all_img.getSubimage(10,81,10,10));
@@ -138,33 +122,33 @@ public class GUI {
             dictionary_of_images.put("empty_cell_seven", all_img.getSubimage(112,23,16,16));
             dictionary_of_images.put("empty_cell_eight", all_img.getSubimage(128,23,16,16));
 
-
-            //resized = resize_bufferedimage(dictionary_of_images.get("zero"), 2, 2);
-
+            //creating whitespace around the game panel
             this.setBorder(BorderFactory.createEmptyBorder(30,30,30,30));
             this.setLayout(new GridLayout(0, 1));
 
-            this.addMouseListener(click);
-
+            this.addMouseListener(click); //connecting to the game panel the click handling Click class
 
         }
         @Override
         public Dimension getPreferredSize() {
+            //setting the size of the panel so that the window.pack() method can size the window according to this
             return new Dimension(20 + board.getSizeX() * 16, 62 + board.getSizeY() * 16 );
         }
 
         @Override
-        public void paintComponent(Graphics g) {
+        public void paintComponent(Graphics g) { //drawing up the game field
             super.paintComponent(g);
+            //drawing the frame of the field, like borders and win/lose face
             g.drawImage(dictionary_of_images.get("top_left_corner"), 0, 0, this);
-            for (int i=0; i < board.getSizeX(); i++) { //belevonni többi for-t
+            for (int i=0; i < board.getSizeX(); i++) {
                 g.drawImage(dictionary_of_images.get("horizontal_border"), 10 + i * 16, 0, this);
             }
             g.drawImage(dictionary_of_images.get("top_right_corner"), 10 + board.getSizeX() * 16, 0, this);
             g.drawImage(dictionary_of_images.get("long_vertical_border"), 0, 10, this);
             g.drawImage(dictionary_of_images.get("long_vertical_border"), 10 + board.getSizeX() * 16, 10, this);
             g.setColor(Color.decode("#C0C0C0"));
-            g.drawRect(10, 10, board.getSizeX() * 16, 31); //akár teljes háttérnek előre?
+            g.drawRect(10, 10, board.getSizeX() * 16, 31);
+            //faces changes in case of winning/losing
             if (lose_flag) {
                 g.drawImage(dictionary_of_images.get("face_lost"), 10 + board.getSizeX() * 8 - 13, 13, this);
             }
@@ -174,11 +158,8 @@ public class GUI {
             else {
                 g.drawImage(dictionary_of_images.get("face_default"), 10 + board.getSizeX() * 8 - 13, 13, this);
             }
-
-
-
+            //converting the number of placed flags to digits
             int r = board.countMines() - board.countFlags();
-
             g.drawImage(dictionary_of_images.get(String.valueOf((((r - r % 100)) / 100) % 10 ))
                     ,board.getSizeX() * 16 + 10 - 4 - 39, 14, this);
             g.drawImage(dictionary_of_images.get(String.valueOf(((r % 100 - r % 10) / 10 ) % 10 ))
@@ -186,6 +167,7 @@ public class GUI {
             g.drawImage(dictionary_of_images.get(String.valueOf(r % 10))
                     ,board.getSizeX() * 16 + 10 - 4 - 13, 14, this);
 
+            //converting the elapsed time since start to digits
             int time = (int) ((new Date().getTime() - start_clock.getTime()) / 1000);
 
             g.drawImage(dictionary_of_images.get(String.valueOf((((time - time % 100)) / 100) % 10 ))
@@ -194,8 +176,7 @@ public class GUI {
                     ,14 + 13, 14, this);
             g.drawImage(dictionary_of_images.get(String.valueOf(time % 10))
                     ,14 + 2 * 13, 14, this);
-
-
+            //drawing more parts of the frame, like borders and corners
             g.drawImage(dictionary_of_images.get("middle_left_corner"), 0, 42, this);
             g.drawImage(dictionary_of_images.get("middle_right_corner"), 10 + board.getSizeX() * 16, 42, this);
             for (int i=0; i < board.getSizeX(); i++) {
@@ -210,13 +191,14 @@ public class GUI {
             for (int i=0; i < board.getSizeX(); i++) {
                 g.drawImage(dictionary_of_images.get("horizontal_border"), 10 + i * 16, 52 + board.getSizeY() * 16, this);
             }
+            //drawing the cells
             for (int row=0; row < board.getSizeY(); row++) {
                 for (int column=0; column < board.getSizeX(); column++) {
 
-                    //create look up table with coordinates to Cell?
                     int cell_cord_x = 10 + column * 16;
                     int cell_cord_y = 52 + row * 16;
 
+                    //creating an entry in the look up table for every cell so that upon clicking them they could be more easily accessed
                     if(!cell_lookup_table.containsKey(new Key(cell_cord_x, cell_cord_y))) {
                         cell_lookup_table.put(new Key(cell_cord_x, cell_cord_y), board.getCell(row, column));
                     }
@@ -264,58 +246,24 @@ public class GUI {
                             g.drawImage(dictionary_of_images.get("empty_cell_eight"), cell_cord_x, cell_cord_y, this);
                         }
                     }
-
-
                 }
             }
-
-
-
-
-
-
-
         }
-
-        public BufferedImage resize_bufferedimage(BufferedImage img, int scale_x, int scale_y)
-        { //https://stackoverflow.com/questions/13605248/java-converting-image-to-bufferedimage
-
-            Image scaled_img = img.getScaledInstance(img.getWidth() * scale_x,
-                    img.getHeight() * scale_y, Image.SCALE_DEFAULT);
-
-            // Create a buffered image with transparency
-            BufferedImage bimage = new BufferedImage(img.getWidth(null)* scale_x,
-                    img.getHeight(null)* scale_y, BufferedImage.TYPE_INT_ARGB);
-
-            // Draw the image on to the buffered image
-            Graphics2D bGr = bimage.createGraphics();
-            bGr.drawImage(scaled_img, 0, 0, null);
-            bGr.dispose();
-
-            // Return the buffered image
-            return bimage;
-        }
-
     }
 
-    public class Main_menu extends JPanel{
-
+    public class Main_menu extends JPanel{ //menu panel to choose from game settings
 
         private ButtonGroup modes;
-        private ButtonGroup connection;
-        private JLabel label_difficulties;
-        private JLabel label_modes;
-        private JLabel label_connection;
-        private JLabel label_role;
-        private Button button_class;
-        private Change_Radio_Buttons radio_event;
         private JTextField IP_address;
         JRadioButton host;
         JRadioButton guest;
 
         public Main_menu() {
-            radio_event = new Change_Radio_Buttons();
+            //radio buttons can be enabled/disabled when single/multi player mode have been chosen
+            Change_Radio_Buttons radio_event = new Change_Radio_Buttons();
 
+            //creating difficulty options as buttongroup
+            //assigning string indicators to them so that they can be queried in Button class
             difficulties = new ButtonGroup();
             JRadioButton difficulties_easy = new JRadioButton("Easy", false);
             difficulties_easy.setActionCommand("easy");
@@ -327,7 +275,7 @@ public class GUI {
             difficulties.add(difficulties_medium);
             difficulties.add(difficulties_hard);
 
-            label_difficulties = new JLabel("Difficulty: ");
+            JLabel label_difficulties = new JLabel("Difficulty: ");
 
             modes = new ButtonGroup();
             JRadioButton single = new JRadioButton("Single player", false);
@@ -339,29 +287,31 @@ public class GUI {
             single.addActionListener(radio_event);
             multi.addActionListener(radio_event);
 
-            label_modes = new JLabel("Game modes: ");
+            JLabel label_modes = new JLabel("Game modes: ");
 
-            connection = new ButtonGroup();
+            ButtonGroup connection = new ButtonGroup();
             host = new JRadioButton("Host", false);
             guest = new JRadioButton("Guest", false);
             connection.add(host);
             connection.add(guest);
 
 
-            label_role = new JLabel("Role: ");
+            JLabel label_role = new JLabel("Role: ");
 
 
-            label_connection = new JLabel("Host IP: ");
+            JLabel label_connection = new JLabel("Host IP: ");
             IP_address = new JTextField("192.168.0.123");
 
 
-            button = new JButton("new game");
+            JButton button = new JButton("new game");
 
-            this.setBorder(BorderFactory.createEmptyBorder(30,30,30,30));
+            //creating the layout with layoutmanager, it is basically a grid
+            this.setBorder(BorderFactory.createEmptyBorder(30,30,30,30)); //create whitespace around
             this.setLayout(new GridBagLayout());
             GridBagConstraints constrains = new GridBagConstraints();
             constrains.fill = GridBagConstraints.HORIZONTAL;
 
+            //placing the menu elements in the grid
             constrains.gridx = 0;
             constrains.gridy = 0;
             this.add(label_difficulties, constrains);
@@ -373,7 +323,7 @@ public class GUI {
             this.add(difficulties_medium, constrains);
             constrains.gridx = 1;
             constrains.gridy = 2;
-            constrains.insets = new Insets(0,0,10,0);
+            constrains.insets = new Insets(0,0,10,0); //whitespace on the bottom of the element
             this.add(difficulties_hard, constrains);
 
             constrains.gridx = 0;
@@ -411,13 +361,16 @@ public class GUI {
             constrains.gridx = 1;
             constrains.gridy = 9;
             this.add(button, constrains);
-            button_class = new Button();
-            button.addActionListener(button_class);
 
+            //creating the button from our Button class
+            Button button_class = new Button();
+            //connecting the action listener of our Button class to the button element in the menu panel
+            button.addActionListener(button_class);
 
         }
 
         public class Change_Radio_Buttons implements ActionListener {
+            //changing between single/multi player options disables/enables connection options (host/guest/IP)
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -438,7 +391,7 @@ public class GUI {
 
     }
 
-    public class Click implements MouseListener {
+    public class Click implements MouseListener { //to handle the right and left mouse click on cells
         int mouse_x;
         int mouse_y;
         int cell_x;
@@ -455,23 +408,27 @@ public class GUI {
             for(int i=0; i < board.getSizeY(); i++){
                 if(mouse_y < 52 + (i+1)*16 && mouse_y > 52 + i * 16) cell_y = 52 + i * 16;
             }
+            //find clicked cell with the coordinates of the cursor
             clicked_cell = cell_lookup_table.get(new Key(cell_x, cell_y));
+            //reveal cell on left click and check if it's a mine or not
             if (SwingUtilities.isLeftMouseButton(e)) {
                 clicked_cell.reveal();
                 if(clicked_cell.displayNumber == -1) { //you lost
                     lose_flag = true;
                 }
             }
+            //flag cell on right click and check if it was the last missing mine
             if (SwingUtilities.isRightMouseButton(e)){
                 clicked_cell.flag();
                 System.out.print(board.countMines() - board.countRevealedMines() + "\n");
-                if(board.countMines() - board.countRevealedMines() == 0){
+                if(board.countMines() - board.countRevealedMines() == 0){ //you won
                     win_flag = true;
                 }
             }
-            panel.repaint();
+            panel.repaint(); //repaint game panel on every click
         }
 
+        //other mouse events are not needed here
         @Override
         public void mousePressed(MouseEvent e) {
 
@@ -493,7 +450,8 @@ public class GUI {
         }
     }
 
-    public class Key {
+    public static class Key { //object containing two integers
+        //its purpose is to create a lookup table to easily access Cells with the knowledge of their xy coordinates
         private final int x;
         private final int y;
 

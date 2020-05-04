@@ -111,6 +111,8 @@ public class Board {
         return cellMatrix[row][col];
     }
 
+    //count the number of mines revealed to check in GUI the win condition
+
     public int countRevealedMines() {
         int count = 0;
         for (Cell[] cellRow : cellMatrix) {
