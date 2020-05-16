@@ -12,53 +12,94 @@ import java.util.*;
 public class GUI { //contains all the classes necessary to build the GUI
 
     public Window_Frame window_frame;
-    private Panel panel;
+    private Panel panel_own;
+    private Panel panel_other;
     private ButtonGroup difficulties;
     private ButtonGroup connection;
     private ButtonGroup modes;
     private JTextField IP_address;
-    private boolean[][] bool_matrix;
 
     private multiPlayer multiPlayer;
-    private Board board;
-    private Map<Key, Cell> cell_lookup_table;
+    private BoardBuilder builder;
+    private boolean[][] bool_matrix;
     private Date start_clock;
-    public boolean win_flag, lose_flag, first_click;
+    public boolean win_flag, lose_flag, established_connection;
 
     public GUI() {
         window_frame = new Window_Frame(); //creating the Jframe containing all GUI elements
         lose_flag = false; //initializing win/lose/first flags
         win_flag = false;
-        first_click = false;
+        established_connection = false;
+        builder = new BoardBuilder();
     }
 
     public class Button implements ActionListener{ //New Game button
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            BoardBuilder builder = new BoardBuilder();
             //choosing between difficulty levels with a Radiobutton Group
             if(difficulties.getSelection().getActionCommand().equals("easy")) {
-                board = builder.getRandomBoard(9, 9, 10);
+                builder.getRandomBoard(9, 9, 10);
             }
             else if(difficulties.getSelection().getActionCommand().equals("medium")) {
-                board = builder.getRandomBoard(16, 16, 40);
+                builder.getRandomBoard(16, 16, 40);
             }
             else { //if "hard"
-                board = builder.getRandomBoard(36, 36, 99);
+                builder.getRandomBoard(36, 36, 99);
             }
             bool_matrix = builder.getBooleanMatrix();
 
-            //overwriting the menu panel with the playing panel
-            try {
-                panel = new Panel(); //playing panel
-            } catch (IOException ex) {
-                ex.printStackTrace();
+            if(modes.getSelection().getActionCommand().equals("multi")){
+                init_multi(bool_matrix);
+                try {
+                    window_frame.set_multi();
+                } catch (IOException ex) {
+                    //ex.printStackTrace();
+                }
             }
-
-            window_frame.setContentPane(panel);
-            window_frame.pack(); //sizing the frame with layout manager according to the needs of its subcomponents
+            else if(modes.getSelection().getActionCommand().equals("single")) {
+                try {
+                    //window_frame.set_multi();
+                    start_clock = new Date();
+                    established_connection = true;
+                    panel_own = new Panel(); //playing panel
+                    //overwriting the menu panel with the playing panel
+                    window_frame.getContentPane().removeAll();
+                    window_frame.getContentPane().repaint();
+                    window_frame.getContentPane().revalidate();
+                    window_frame.add(panel_own);
+                    //window_frame.setContentPane(panel_own);
+                    //sizing the frame with layout manager according to the needs of its subcomponents
+                    window_frame.pack();
+                } catch (IOException ex) {
+                    //ex.printStackTrace();
+                }
+            }
         }
+
+        private void init_multi(boolean[][] mines) {
+            if(connection.getSelection().getActionCommand().equals("host")) {
+                window_frame.setTitle("Host Minesweeper");
+                multiPlayer = new multiPlayer(true);
+                multiPlayer.acceptConnection(mines);
+                start_clock = new Date(); //starting the game clock
+                established_connection = true;
+                opponentClick oclick = new opponentClick();
+                multiPlayer.addReceiveListener(oclick);
+            }
+            else if(connection.getSelection().getActionCommand().equals("guest")) {
+                window_frame.setTitle("Guest Minesweeper");
+                multiPlayer = new multiPlayer(false);
+                multiPlayer.requestConnection("localhost",51734);
+                start_clock = new Date(); //starting the game clock
+                established_connection = true;
+                opponentClick oclick = new opponentClick();
+                multiPlayer.addReceiveListener(oclick);
+                bool_matrix = multiPlayer.getBoard();
+                multiPlayer.requestingData();
+            }
+        }
+
     }
 
     public class Window_Frame extends JFrame { //it is the window
@@ -75,13 +116,59 @@ public class GUI { //contains all the classes necessary to build the GUI
             this.setLocationRelativeTo(null); //centers window
         }
 
+        public void set_multi() throws IOException {
+            this.getContentPane().removeAll();
+            this.getContentPane().repaint();
+            this.getContentPane().revalidate();
+            GridLayout gridLayout = new GridLayout(0, 2);
+            this.setLayout(gridLayout);
+            gridLayout.layoutContainer(this);
+            panel_own = new Panel();
+            panel_other = new Panel();
+
+            this.add(panel_own, 0, 0);
+            this.add(panel_other, 0, 1);
+            this.pack();
+        }
+
+    }
+
+    public class opponentClick implements ReceiveListener {
+
+        Cell received_cell;
+        @Override
+        public void ReceiveData(boolean isLeft, int x, int y)
+        {
+            //find clicked cell with the coordinates of the cursor
+            received_cell = panel_other.getCell_lookup_table().get(new Key(x, y));
+
+            if(received_cell != null){
+                //reveal cell on left click and check if it's a mine or not
+                if (isLeft) {
+                    received_cell.reveal();
+                    if(received_cell.displayNumber == -1) { //you lost
+                        lose_flag = true;
+                    }
+                }
+                //flag cell on right click and check if it was the last missing mine
+                if (!isLeft){
+                    received_cell.flag();
+                    if(panel_other.getBoard().countMines() - panel_other.getBoard().countRevealedMines() == 0){ //you won
+                        win_flag = true;
+                    }
+                }
+            }
+            panel_other.repaint(); //repaint game panel on every click
+        }
     }
 
     public class Panel extends JPanel{
-
+        private Board board;
+        private Map<Key, Cell> cell_lookup_table;
         private Map<String, BufferedImage> dictionary_of_images;
 
         public Panel() throws IOException {
+            board = builder.getBoardFromBooleanMatrix(bool_matrix);
 
             BufferedImage all_img = ImageIO.read(new File("./all.gif")); //importing the "sprite"
             dictionary_of_images = new HashMap<>(); //creating the list of images with names
@@ -131,8 +218,8 @@ public class GUI { //contains all the classes necessary to build the GUI
             dictionary_of_images.put("empty_cell_eight", all_img.getSubimage(128,23,16,16));
 
             //creating whitespace around the game panel
-            this.setBorder(BorderFactory.createEmptyBorder(30,30,30,30));
-            this.setLayout(new GridLayout(0, 1));
+            //this.setBorder(BorderFactory.createEmptyBorder(30,30,30,30));
+            //this.setLayout(new GridLayout(0, 1));
 
             this.addMouseListener(click); //connecting to the game panel the click handling Click class
 
@@ -177,7 +264,7 @@ public class GUI { //contains all the classes necessary to build the GUI
 
             //converting the elapsed time since start to digits
             int time = 0;
-            if(first_click) {
+            if(established_connection) {
                 time = (int) ((new Date().getTime() - start_clock.getTime()) / 1000);
             }
 
@@ -260,11 +347,21 @@ public class GUI { //contains all the classes necessary to build the GUI
                 }
             }
         }
+
+        public Board getBoard() {
+            return board;
+        }
+        public Map<Key, Cell> getCell_lookup_table() {
+            return cell_lookup_table;
+        }
     }
 
     public class Main_menu extends JPanel{ //menu panel to choose from game settings
         JRadioButton host;
         JRadioButton guest;
+        JRadioButton difficulties_easy;
+        JRadioButton difficulties_medium;
+        JRadioButton difficulties_hard;
 
         public Main_menu() {
             //radio buttons can be enabled/disabled when single/multi player mode have been chosen
@@ -273,11 +370,11 @@ public class GUI { //contains all the classes necessary to build the GUI
             //creating difficulty options as buttongroup
             //assigning string indicators to them so that they can be queried in Button class
             difficulties = new ButtonGroup();
-            JRadioButton difficulties_easy = new JRadioButton("Easy", true);
+            difficulties_easy = new JRadioButton("Easy", true);
             difficulties_easy.setActionCommand("easy");
-            JRadioButton difficulties_medium = new JRadioButton("Medium", false);
+            difficulties_medium = new JRadioButton("Medium", false);
             difficulties_medium.setActionCommand("medium");
-            JRadioButton difficulties_hard = new JRadioButton("Hard", false);
+            difficulties_hard = new JRadioButton("Hard", false);
             difficulties_hard.setActionCommand("hard");
             difficulties.add(difficulties_easy);
             difficulties.add(difficulties_medium);
@@ -298,12 +395,14 @@ public class GUI { //contains all the classes necessary to build the GUI
             JLabel label_modes = new JLabel("Game modes: ");
 
             connection = new ButtonGroup();
-            host = new JRadioButton("Host", false);
+            host = new JRadioButton("Host", true);
             host.setActionCommand("host");
             guest = new JRadioButton("Guest", false);
             guest.setActionCommand("guest");
             connection.add(host);
             connection.add(guest);
+            host.addActionListener(radio_event);
+            guest.addActionListener(radio_event);
 
 
             JLabel label_role = new JLabel("Role: ");
@@ -393,10 +492,23 @@ public class GUI { //contains all the classes necessary to build the GUI
                     guest.setEnabled(false);
                     IP_address.setEditable(false);
                 }
-                else { //if "multi"
+                else if(modes.getSelection().getActionCommand().equals("multi")) {
                     host.setEnabled(true);
                     guest.setEnabled(true);
                     IP_address.setEditable(true);
+                }
+
+                if(connection.getSelection().getActionCommand().equals("guest")) {
+                    difficulties_easy.setEnabled(false);
+                    difficulties_medium.setEnabled(false);
+                    difficulties_hard.setEnabled(false);
+                    IP_address.setEditable(true);
+                }
+                else if(connection.getSelection().getActionCommand().equals("host")){
+                    difficulties_easy.setEnabled(true);
+                    difficulties_medium.setEnabled(true);
+                    difficulties_hard.setEnabled(true);
+                    IP_address.setEditable(false);
                 }
 
             }
@@ -420,34 +532,25 @@ public class GUI { //contains all the classes necessary to build the GUI
             mouse_x = e.getX();
             mouse_y = e.getY();
 
-            for(int i=0; i < board.getSizeX(); i++){
+            for(int i=0; i < panel_own.getBoard().getSizeX(); i++){
                 if(mouse_x < 10 + (i+1)*16 && mouse_x > 10 + i * 16) {
                     cell_x = 10 + i * 16;
                 }
             }
-            for(int i=0; i < board.getSizeY(); i++){
+            for(int i=0; i < panel_own.getBoard().getSizeY(); i++){
                 if(mouse_y < 52 + (i+1)*16 && mouse_y > 52 + i * 16) {
                     cell_y = 52 + i * 16;
                 }
             }
             //find clicked cell with the coordinates of the cursor
-            clicked_cell = cell_lookup_table.get(new Key(cell_x, cell_y));
-
-            if(!first_click && (clicked_cell != null)) {
-                start_clock = new Date(); //starting the game clock
-                if(modes.getSelection().getActionCommand().equals("multi")){
-                    init_multi(bool_matrix);
-                }
-                first_click = true;
-            }
-            System.out.print(clicked_cell+ "\n");
-            System.out.print(cell_x + "_" + cell_y + "\n");
-            System.out.print(mouse_x + "_" + mouse_y + "\n");
+            clicked_cell = panel_own.getCell_lookup_table().get(new Key(cell_x, cell_y));
 
             if(clicked_cell != null){
                 //reveal cell on left click and check if it's a mine or not
                 if (SwingUtilities.isLeftMouseButton(e)) {
-                    //multiPlayer.writeMyCells(true,nx,ny);
+                    if(modes.getSelection().getActionCommand().equals("multi")) {
+                        multiPlayer.writeMyCells(true, cell_x, cell_y);
+                    }
                     clicked_cell.reveal();
                     if(clicked_cell.displayNumber == -1) { //you lost
                         lose_flag = true;
@@ -455,45 +558,17 @@ public class GUI { //contains all the classes necessary to build the GUI
                 }
                 //flag cell on right click and check if it was the last missing mine
                 if (SwingUtilities.isRightMouseButton(e)){
-                    //multiPlayer.writeMyCells(false,nx,ny);
+                    if(modes.getSelection().getActionCommand().equals("multi")) {
+                        multiPlayer.writeMyCells(false, cell_x, cell_y);
+                    }
                     clicked_cell.flag();
-                    System.out.print(board.countMines() - board.countRevealedMines() + "\n");
-                    if(board.countMines() - board.countRevealedMines() == 0){ //you won
+
+                    if(panel_own.getBoard().countMines() - panel_own.getBoard().countRevealedMines() == 0){ //you won
                         win_flag = true;
                     }
                 }
             }
-            panel.repaint(); //repaint game panel on every click
-        }
-
-        private void init_multi(boolean[][] mines) {
-            if(connection.getSelection().getActionCommand().equals("host")) {
-                multiPlayer = new multiPlayer(true);
-                multiPlayer.acceptConnection(mines);
-                opponentClick oclick = new opponentClick();
-                multiPlayer.addReceiveListener(oclick);
-            }
-            else if(connection.getSelection().getActionCommand().equals("guest")) {
-                multiPlayer = new multiPlayer(false);
-                multiPlayer.requestConnection("localhost",51734);
-                opponentClick oclick = new opponentClick();
-                multiPlayer.addReceiveListener(oclick);
-                boolean[][] board = multiPlayer.getBoard();
-                multiPlayer.requestingData();
-
-            }
-        }
-
-        public class opponentClick implements ReceiveListener {
-            @Override
-            public void ReceiveData(boolean isLeft, int x, int y)
-            {
-                if(isLeft){System.out.println("Bal:");}
-                else{System.out.println("Jobb:");}
-                System.out.println(x);
-                System.out.println(y);
-                System.out.println("");
-            }
+            panel_own.repaint(); //repaint game panel on every click
         }
 
         //other mouse events are not needed here

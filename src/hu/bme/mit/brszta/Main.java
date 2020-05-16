@@ -16,7 +16,7 @@ public class Main implements Runnable {
         try { //create the UI theme according to the OS
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
         Runnable runnable = new Main();
