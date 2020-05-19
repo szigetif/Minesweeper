@@ -23,12 +23,13 @@ public class GUI { //contains all the classes necessary to build the GUI
     private BoardBuilder builder;
     private boolean[][] bool_matrix;
     private Date start_clock;
-    public boolean win_flag, lose_flag, established_connection;
+    public boolean win_flag, lose_flag, opponent_flag, established_connection;
 
     public GUI() {
         window_frame = new Window_Frame(); //creating the Jframe containing all GUI elements
         lose_flag = false; //initializing win/lose/first flags
         win_flag = false;
+        opponent_flag = false;
         established_connection = false;
         builder = new BoardBuilder();
     }
@@ -91,15 +92,19 @@ public class GUI { //contains all the classes necessary to build the GUI
                 window_frame.setTitle("Guest Minesweeper");
                 multiPlayer = new multiPlayer(false);
                 multiPlayer.requestConnection("localhost",51734);
+
                 start_clock = new Date(); //starting the game clock
                 established_connection = true;
                 opponentClick oclick = new opponentClick();
                 multiPlayer.addReceiveListener(oclick);
                 bool_matrix = multiPlayer.getBoard();
                 multiPlayer.requestingData();
+
+//                catch (Exception e) {
+//                    System.out.print("Host is not listening, try again later!");
+//                }
             }
         }
-
     }
 
     public class Window_Frame extends JFrame { //it is the window
@@ -137,28 +142,31 @@ public class GUI { //contains all the classes necessary to build the GUI
 
         Cell received_cell;
         @Override
-        public void ReceiveData(boolean isLeft, int x, int y)
-        {
-            //find clicked cell with the coordinates of the cursor
-            received_cell = panel_other.getCell_lookup_table().get(new Key(x, y));
+        public void ReceiveData(boolean isLeft, int x, int y) {
+            if(!win_flag && !lose_flag){
+                //find clicked cell with the coordinates of the cursor
+                received_cell = panel_other.getCell_lookup_table().get(new Key(x, y));
 
-            if(received_cell != null){
-                //reveal cell on left click and check if it's a mine or not
-                if (isLeft) {
-                    received_cell.reveal();
-                    if(received_cell.displayNumber == -1) { //you lost
-                        lose_flag = true;
+                if (received_cell != null) {
+                    //reveal cell on left click and check if it's a mine or not
+                    if (isLeft) {
+                        received_cell.reveal();
+                        if (received_cell.displayNumber == -1) { //opponent lost
+                            lose_flag = true;
+                            opponent_flag = true;
+                        }
+                    }
+                    //flag cell on right click and check if it was the last missing mine
+                    if (!isLeft) {
+                        received_cell.flag();
+                        if (panel_other.getBoard().countMines() - panel_other.getBoard().countRevealedMines() == 0) { //opponent won
+                            win_flag = true;
+                            opponent_flag = true;
+                        }
                     }
                 }
-                //flag cell on right click and check if it was the last missing mine
-                if (!isLeft){
-                    received_cell.flag();
-                    if(panel_other.getBoard().countMines() - panel_other.getBoard().countRevealedMines() == 0){ //you won
-                        win_flag = true;
-                    }
-                }
+                panel_other.repaint(); //repaint game panel on every click
             }
-            panel_other.repaint(); //repaint game panel on every click
         }
     }
 
@@ -302,7 +310,7 @@ public class GUI { //contains all the classes necessary to build the GUI
                     }
 
                     if(board.getCell(row, column).cellState == CellState.DEFAULT) {
-                        if(lose_flag && board.getCell(row, column).isMine() ) {
+                        if((lose_flag) && board.getCell(row, column).isMine() ) {
                             g.drawImage(dictionary_of_images.get("revealed_bomb_cell"), cell_cord_x, cell_cord_y, this);
                         }
                         else {
@@ -528,53 +536,54 @@ public class GUI { //contains all the classes necessary to build the GUI
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            cell_x = cell_y = 0;
-            mouse_x = e.getX();
-            mouse_y = e.getY();
+            if(e.getSource() == panel_own && !win_flag && !lose_flag){
+                cell_x = cell_y = 0;
+                mouse_x = e.getX();
+                mouse_y = e.getY();
 
-            for(int i=0; i < panel_own.getBoard().getSizeX(); i++){
-                if(mouse_x < 10 + (i+1)*16 && mouse_x > 10 + i * 16) {
-                    cell_x = 10 + i * 16;
+                for(int i=0; i < panel_own.getBoard().getSizeX(); i++){
+                    if(mouse_x < 10 + (i+1)*16 && mouse_x > 10 + i * 16) {
+                        cell_x = 10 + i * 16;
+                    }
                 }
-            }
-            for(int i=0; i < panel_own.getBoard().getSizeY(); i++){
-                if(mouse_y < 52 + (i+1)*16 && mouse_y > 52 + i * 16) {
-                    cell_y = 52 + i * 16;
+                for(int i=0; i < panel_own.getBoard().getSizeY(); i++){
+                    if(mouse_y < 52 + (i+1)*16 && mouse_y > 52 + i * 16) {
+                        cell_y = 52 + i * 16;
+                    }
                 }
-            }
-            //find clicked cell with the coordinates of the cursor
-            clicked_cell = panel_own.getCell_lookup_table().get(new Key(cell_x, cell_y));
+                //find clicked cell with the coordinates of the cursor
+                clicked_cell = panel_own.getCell_lookup_table().get(new Key(cell_x, cell_y));
 
-            if(clicked_cell != null){
-                //reveal cell on left click and check if it's a mine or not
-                if (SwingUtilities.isLeftMouseButton(e)) {
-                    if(modes.getSelection().getActionCommand().equals("multi")) {
-                        multiPlayer.writeMyCells(true, cell_x, cell_y);
+                if(clicked_cell != null){
+                    //reveal cell on left click and check if it's a mine or not
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        if(modes.getSelection().getActionCommand().equals("multi")) {
+                            multiPlayer.writeMyCells(true, cell_x, cell_y);
+                        }
+                        clicked_cell.reveal();
+                        if(clicked_cell.displayNumber == -1) { //you lost
+                            lose_flag = true;
+                        }
                     }
-                    clicked_cell.reveal();
-                    if(clicked_cell.displayNumber == -1) { //you lost
-                        lose_flag = true;
-                    }
-                }
-                //flag cell on right click and check if it was the last missing mine
-                if (SwingUtilities.isRightMouseButton(e)){
-                    if(modes.getSelection().getActionCommand().equals("multi")) {
-                        multiPlayer.writeMyCells(false, cell_x, cell_y);
-                    }
-                    clicked_cell.flag();
+                    //flag cell on right click and check if it was the last missing mine
+                    if (SwingUtilities.isRightMouseButton(e)){
+                        if(modes.getSelection().getActionCommand().equals("multi")) {
+                            multiPlayer.writeMyCells(false, cell_x, cell_y);
+                        }
+                        clicked_cell.flag();
 
-                    if(panel_own.getBoard().countMines() - panel_own.getBoard().countRevealedMines() == 0){ //you won
-                        win_flag = true;
+                        if(panel_own.getBoard().countMines() - panel_own.getBoard().countRevealedMines() == 0){ //you won
+                            win_flag = true;
+                        }
                     }
                 }
+                panel_own.repaint(); //repaint game panel on every click
             }
-            panel_own.repaint(); //repaint game panel on every click
         }
 
         //other mouse events are not needed here
         @Override
         public void mousePressed(MouseEvent e) {
-
         }
 
         @Override
@@ -617,6 +626,49 @@ public class GUI { //contains all the classes necessary to build the GUI
             this.y = y;
         }
 
+    }
+
+    public void reset_game() {
+        int new_game = 0;
+        Object[] options = {"Igen.", "Nem."};
+        if(opponent_flag) {
+            if(win_flag) {
+                new_game = JOptionPane.showOptionDialog(null,
+                        "Ellenfél nyert, te vesztettél! Újrakezdés?",
+                        "Eredmény", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+                        null, options, options[0]);
+            }
+            else if(lose_flag) {
+                new_game = JOptionPane.showOptionDialog(null,
+                        "Ellenfél vesztett, te nyertél!! Újrakezdés?",
+                        "Eredmény", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+                        null, options, options[0]);
+            }
+        }
+        else {
+            if(win_flag) {
+                new_game = JOptionPane.showOptionDialog(null,
+                        "Nyertél! Újrakezdés?",
+                        "Eredmény", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+                        null, options, options[0]);
+            }
+            else if(lose_flag) {
+                new_game = JOptionPane.showOptionDialog(null,
+                        "Vesztettél! Újrakezdés?",
+                        "Eredmény", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE,
+                        null, options, options[0]);
+            }
+        }
+        if(new_game == 0) {
+            window_frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        }
+
+        window_frame.dispatchEvent(new WindowEvent(window_frame, WindowEvent.WINDOW_CLOSING));
+        window_frame = new Window_Frame(); //creating the Jframe containing all GUI elements
+        lose_flag = false; //initializing win/lose/first flags
+        win_flag = false;
+        established_connection = false;
+        builder = new BoardBuilder();
     }
 
 }

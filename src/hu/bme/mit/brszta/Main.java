@@ -1,8 +1,6 @@
 package hu.bme.mit.brszta;
 
-import java.io.IOException;
 import javax.swing.UIManager;
-
 
 public class Main implements Runnable {
 
@@ -25,15 +23,24 @@ public class Main implements Runnable {
     }
     @Override
     public void run() {
-        while(!gui.win_flag && !gui.lose_flag){
-            //in case of losing or winning stop repainting
-            // the timer freezes in this way
-            gui.window_frame.repaint(); //repaint every half second for the timer
+        while(true){
+
+            if(!gui.win_flag && !gui.lose_flag) {
+                gui.window_frame.repaint(); //repaint every half second for the timer
+                //in case of losing or winning stop repainting
+                // the timer freezes in this way
+            }
+
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
                 //e.printStackTrace();
             }
+
+            if(gui.win_flag || gui.lose_flag) {
+                gui.reset_game();
+            }
         }
+
     }
 }

@@ -182,15 +182,15 @@ public class multiPlayer{
             try {
 
                 SendBoard board = new SendBoard(mines);
-                for (int i = 0; i < mines.length; i++) {
-                    for (int j = 0; j < mines[i].length; j++) {
-                        if (mines[i][j])
-                            System.out.print("1");
-                        else
-                            System.out.print("0");
-                    }
-                    System.out.println();
-                }
+//                for (int i = 0; i < mines.length; i++) {
+//                    for (int j = 0; j < mines[i].length; j++) {
+//                        if (mines[i][j])
+//                            System.out.print("1");
+//                        else
+//                            System.out.print("0");
+//                    }
+//                    System.out.println();
+//                }
                 objOut.writeObject(board);
 
             } catch (IOException e) {
